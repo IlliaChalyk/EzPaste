@@ -14,10 +14,8 @@
       sortedKeys[sortOrder] = { key, value }
     }
 
-    console.log(sortedKeys)
     for (const i in sortedKeys) {
       const { key, value } = sortedKeys[i]
-      console.log(key, value)
       const div = getSavedValueDiv(key, value)
       valuesContainer.appendChild(div)
     }
@@ -27,19 +25,17 @@
   const keyInput = document.getElementById('key-input')
   const valueInput = document.getElementById('value-input')
 
-  addBtn.addEventListener('click', (event) => {
+  addBtn.addEventListener('click', async (event) => {
     event.preventDefault()
 
     errorMessage.remove()
-
     if (!keyInput.value.trim().length) {
       errorMessage.innerText = 'Error: key cannot be empty!'
       valuesContainer.appendChild(errorMessage)
       return
     }
 
-    // TODO: check if value saved without errors
-    chrome.runtime.sendMessage({
+    const response = await chrome.runtime.sendMessage({
       type: 'createNewItem',
       values: {
         key: keyInput.value,
@@ -47,7 +43,12 @@
       },
     })
 
-    // TODO: do that only on success
+    if (response.status === 'error') {
+      errorMessage.innerText = `Error: ${response.message}!`
+      valuesContainer.appendChild(errorMessage)
+      return
+    }
+
     const div = getSavedValueDiv(keyInput.value, valueInput.value)
     valuesContainer.appendChild(div)
 

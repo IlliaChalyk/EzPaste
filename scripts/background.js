@@ -40,33 +40,40 @@
     })
   })
 
-  chrome.runtime.onMessage.addListener(
-    async (request, sender, sendResponse) => {
-      const { key, value } = request.values
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    ;(async () => {
+      if (request.type === 'createNewItem') {
+        const { key, value } = request.values
 
-      // TODO: implement proper duplicate check
-      chrome.storage.local.get([key]).then(async (res) => {
-        if (typeof res != 'undefined') {
-          console.warn(`key "${res}" already exists.`)
+        const existingKey = await chrome.storage.local.get([key])
+        if (existingKey[key]) {
+          console.warn(`key "${key}" already exists.`)
 
           return sendResponse({
             status: 'error',
-            message: `key  "${res}" already exists`,
+            message: `key  "${key}" already exists`,
           })
         }
-      })
 
-      const count = await chrome.storage.local
-        .get()
-        .then((data) => Object.keys(data).length)
-      const sortOrder = count + 1
-      chrome.storage.local.set({ [key]: { sortOrder, value } })
-      chrome.contextMenus.create({
-        title: key,
-        contexts: CONTEXTS,
-        id: key,
-        parentId: EZPASTE_MENU_ITEM_ID,
-      })
-    }
-  )
+        const data = await chrome.storage.local.get()
+        const count = Object.keys(data).length
+        const sortOrder = count + 1
+
+        chrome.storage.local.set({ [key]: { sortOrder, value } })
+        chrome.contextMenus.create({
+          title: key,
+          contexts: CONTEXTS,
+          id: key,
+          parentId: EZPASTE_MENU_ITEM_ID,
+        })
+
+        sendResponse({
+          status: 'success',
+          message: `Key ${key} with value ${value} saved successfully`,
+        })
+      }
+    })()
+
+    return true
+  })
 })()
