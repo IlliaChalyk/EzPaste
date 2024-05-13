@@ -72,6 +72,12 @@
           message: `Key ${key} with value ${value} saved successfully`,
         })
       }
+
+      if (request.type === 'deleteItem') {
+        // TODO: fix bug when deleting brakes sort order
+        chrome.storage.local.remove([request.key])
+        chrome.contextMenus.remove(request.key)
+      }
     })()
 
     return true

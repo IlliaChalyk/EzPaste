@@ -1,9 +1,5 @@
 ;(() => {
-  // TODO: implement Remove button function
-
   const valuesContainer = document.getElementById('values')
-  const inputContainer = document.getElementById('input-container')
-
   const errorMessage = document.getElementById('error-container')
 
   chrome.storage.local.get().then((res) => {
@@ -72,12 +68,25 @@
     const deleteBtn = document.createElement('button')
     deleteBtn.innerText = 'Remove'
     deleteBtn.classList = 'btn delete'
+    deleteBtn.key = key
+    deleteBtn.addEventListener('click', handelRemoveEntry)
 
     div.appendChild(keyInput)
     div.appendChild(valueInput)
     div.appendChild(deleteBtn)
 
     return div
+  }
+
+  const handelRemoveEntry = (event) => {
+    const btn = event.srcElement
+    const key = btn.key
+    chrome.runtime.sendMessage({
+      type: 'deleteItem',
+      key: key,
+    })
+
+    btn.parentElement.remove()
   }
 
   const setErrorMessage = (message) => {
