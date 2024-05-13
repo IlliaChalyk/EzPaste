@@ -2,10 +2,9 @@
   // TODO: implement Remove button function
 
   const valuesContainer = document.getElementById('values')
+  const inputContainer = document.getElementById('input-container')
 
-  const errorMessage = document.createElement('div')
-  errorMessage.className = 'error-message-container'
-  errorMessage.id = 'err'
+  const errorMessage = document.getElementById('error-container')
 
   chrome.storage.local.get().then((res) => {
     const sortedKeys = {}
@@ -28,10 +27,9 @@
   addBtn.addEventListener('click', async (event) => {
     event.preventDefault()
 
-    errorMessage.remove()
+    errorMessage.hidden = true
     if (!keyInput.value.trim().length) {
-      errorMessage.innerText = 'Error: key cannot be empty!'
-      valuesContainer.appendChild(errorMessage)
+      setErrorMessage('key cannot be empty!')
       return
     }
 
@@ -44,13 +42,13 @@
     })
 
     if (response.status === 'error') {
-      errorMessage.innerText = `Error: ${response.message}!`
-      valuesContainer.appendChild(errorMessage)
+      setErrorMessage(response.message)
       return
     }
 
     const div = getSavedValueDiv(keyInput.value, valueInput.value)
     valuesContainer.appendChild(div)
+    div.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
 
     keyInput.value = ''
     valueInput.value = ''
@@ -80,5 +78,10 @@
     div.appendChild(deleteBtn)
 
     return div
+  }
+
+  const setErrorMessage = (message) => {
+    errorMessage.innerText = `Error: ${message}`
+    errorMessage.hidden = false
   }
 })()
