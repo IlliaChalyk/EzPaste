@@ -11,21 +11,27 @@
     })
 
     chrome.storage.local.get().then((data) => {
+      const sortedKeys = []
       for (const key in data) {
+        const { sortOrder, value } = data[key]
+        sortedKeys[sortOrder] = key
+      }
+
+      sortedKeys.forEach((key) => {
         chrome.contextMenus.create({
           title: key,
           contexts: CONTEXTS,
           id: key,
           parentId: EZPASTE_MENU_ITEM_ID,
         })
-      }
+      })
     })
   })
 
   chrome.contextMenus.onClicked.addListener((event) => {
     const id = event.menuItemId
     chrome.storage.local.get([id]).then(async (data) => {
-      const value = data[id]
+      const value = data[id].value
       const [tab] = await chrome.tabs.query({
         active: true,
         lastFocusedWindow: true,
@@ -34,28 +40,33 @@
     })
   })
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    const { key, value } = request.values
+  chrome.runtime.onMessage.addListener(
+    async (request, sender, sendResponse) => {
+      const { key, value } = request.values
 
-    // TODO: implement proper duplicate check
-    chrome.storage.local.get([key]).then(async (res) => {
-      if (typeof res != 'undefined') {
-        console.warn(`key "${res}" already exists.`)
+      // TODO: implement proper duplicate check
+      chrome.storage.local.get([key]).then(async (res) => {
+        if (typeof res != 'undefined') {
+          console.warn(`key "${res}" already exists.`)
 
-        return sendResponse({
-          status: 'error',
-          message: `key  "${res}" already exists`,
-        })
-      }
-    })
+          return sendResponse({
+            status: 'error',
+            message: `key  "${res}" already exists`,
+          })
+        }
+      })
 
-    // TODO: add sorted order
-    chrome.storage.local.set({ [key]: value })
-    chrome.contextMenus.create({
-      title: key,
-      contexts: CONTEXTS,
-      id: key,
-      parentId: EZPASTE_MENU_ITEM_ID,
-    })
-  })
+      const count = await chrome.storage.local
+        .get()
+        .then((data) => Object.keys(data).length)
+      const sortOrder = count + 1
+      chrome.storage.local.set({ [key]: { sortOrder, value } })
+      chrome.contextMenus.create({
+        title: key,
+        contexts: CONTEXTS,
+        id: key,
+        parentId: EZPASTE_MENU_ITEM_ID,
+      })
+    }
+  )
 })()

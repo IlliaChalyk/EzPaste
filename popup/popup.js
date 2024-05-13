@@ -3,8 +3,17 @@
 
   const valuesContainer = document.getElementById('values')
   chrome.storage.local.get().then((res) => {
+    const sortedKeys = {}
     for (const key in res) {
-      const div = getSavedValueDiv(key, res[key])
+      const { value, sortOrder } = res[key]
+      sortedKeys[sortOrder] = { key, value }
+    }
+
+    console.log(sortedKeys)
+    for (const i in sortedKeys) {
+      const { key, value } = sortedKeys[i]
+      console.log(key, value)
+      const div = getSavedValueDiv(key, value)
       valuesContainer.appendChild(div)
     }
   })
@@ -13,8 +22,11 @@
   const keyInput = document.getElementById('key-input')
   const valueInput = document.getElementById('value-input')
 
+  // TODO: prevent empty keys to save
   addBtn.addEventListener('click', (event) => {
     event.preventDefault()
+
+    // TODO: check if value saved without errors
     chrome.runtime.sendMessage({
       type: 'createNewItem',
       values: {
@@ -23,6 +35,7 @@
       },
     })
 
+    // TODO: do that only on success
     const div = getSavedValueDiv(keyInput.value, valueInput.value)
     valuesContainer.appendChild(div)
 
