@@ -2,6 +2,11 @@
   // TODO: implement Remove button function
 
   const valuesContainer = document.getElementById('values')
+
+  const errorMessage = document.createElement('div')
+  errorMessage.className = 'error-message-container'
+  errorMessage.id = 'err'
+
   chrome.storage.local.get().then((res) => {
     const sortedKeys = {}
     for (const key in res) {
@@ -22,9 +27,16 @@
   const keyInput = document.getElementById('key-input')
   const valueInput = document.getElementById('value-input')
 
-  // TODO: prevent empty keys to save
   addBtn.addEventListener('click', (event) => {
     event.preventDefault()
+
+    errorMessage.remove()
+
+    if (!keyInput.value.trim().length) {
+      errorMessage.innerText = 'Error: key cannot be empty!'
+      valuesContainer.appendChild(errorMessage)
+      return
+    }
 
     // TODO: check if value saved without errors
     chrome.runtime.sendMessage({
