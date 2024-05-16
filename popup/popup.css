@@ -4,7 +4,8 @@ html {
 }
 
 .container {
-  width: 465px;
+  width: 470px;
+  height: 420px;
   padding: 20px;
   border: 2px dashed rgb(233, 233, 233);
   border-radius: 15px;
@@ -20,12 +21,12 @@ html {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .input-container {
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .v-container {
