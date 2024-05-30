@@ -4,14 +4,17 @@
 
   chrome.storage.local.get().then((res) => {
     const sortedKeys = {}
-    for (const key in res) {
-      const { value, sortOrder } = res[key]
-      sortedKeys[sortOrder] = { key, value }
+    for (const idx in res) {
+      if (idx === 'lastItemId') {
+        continue
+      }
+      const { key, value } = res[idx]
+      sortedKeys[idx] = { key, value }
     }
 
-    for (const i in sortedKeys) {
-      const { key, value } = sortedKeys[i]
-      const div = getSavedValueDiv(key, value)
+    for (const idx in sortedKeys) {
+      const { key, value } = sortedKeys[idx]
+      const div = getSavedValueDiv(key, value, idx)
       valuesContainer.appendChild(div)
     }
   })
@@ -42,7 +45,8 @@
       return
     }
 
-    const div = getSavedValueDiv(keyInput.value, valueInput.value)
+    const itemId = response.itemId
+    const div = getSavedValueDiv(keyInput.value, valueInput.value, itemId)
     valuesContainer.appendChild(div)
     div.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
 
@@ -51,7 +55,7 @@
   })
 
   // TODO: refactor getSavedValueDiv
-  const getSavedValueDiv = (key, value) => {
+  const getSavedValueDiv = (key, value, itemId) => {
     const div = document.createElement('div')
     div.className = 'saved-value'
 
@@ -68,7 +72,7 @@
     const deleteBtn = document.createElement('button')
     deleteBtn.innerText = 'Remove'
     deleteBtn.classList = 'btn delete'
-    deleteBtn.key = key
+    deleteBtn.id = itemId
     deleteBtn.addEventListener('click', handelRemoveEntry)
 
     div.appendChild(keyInput)
@@ -80,10 +84,10 @@
 
   const handelRemoveEntry = (event) => {
     const btn = event.srcElement
-    const key = btn.key
+    const itemId = btn.id
     chrome.runtime.sendMessage({
       type: 'deleteItem',
-      key: key,
+      itemId: itemId,
     })
 
     btn.parentElement.remove()

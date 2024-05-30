@@ -12,16 +12,16 @@
 
     chrome.storage.local.get().then((data) => {
       const sortedKeys = []
-      for (const key in data) {
-        const { sortOrder, value } = data[key]
-        sortedKeys[sortOrder] = key
+      for (const itemId in data) {
+        const { key } = data[itemId]
+        sortedKeys[itemId] = key
       }
 
-      sortedKeys.forEach((key) => {
+      sortedKeys.forEach((key, id) => {
         chrome.contextMenus.create({
           title: key,
           contexts: CONTEXTS,
-          id: key,
+          id: String(id),
           parentId: EZPASTE_MENU_ITEM_ID,
         })
       })
@@ -55,28 +55,28 @@
           })
         }
 
-        const data = await chrome.storage.local.get()
-        const count = Object.keys(data).length
-        const sortOrder = count + 1
+        const { lastItemId } = await chrome.storage.local.get('lastItemId')
+        const itemId = lastItemId || lastItemId === 0 ? lastItemId + 1 : 0
 
-        chrome.storage.local.set({ [key]: { sortOrder, value } })
+        chrome.storage.local.set({ lastItemId: itemId })
+        chrome.storage.local.set({ [itemId]: { key, value } })
         chrome.contextMenus.create({
           title: key,
           contexts: CONTEXTS,
-          id: key,
+          id: String(itemId),
           parentId: EZPASTE_MENU_ITEM_ID,
         })
 
         sendResponse({
           status: 'success',
           message: `Key ${key} with value ${value} saved successfully`,
+          itemId: itemId,
         })
       }
 
       if (request.type === 'deleteItem') {
-        // TODO: fix bug when deleting brakes sort order
-        chrome.storage.local.remove([request.key])
-        chrome.contextMenus.remove(request.key)
+        chrome.storage.local.remove([request.itemId])
+        chrome.contextMenus.remove(request.itemId)
       }
     })()
 
