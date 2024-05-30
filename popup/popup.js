@@ -58,6 +58,7 @@
   const getSavedValueDiv = (key, value, itemId) => {
     const div = document.createElement('div')
     div.className = 'saved-value'
+    div.id = itemId
 
     const keyInput = document.createElement('input')
     keyInput.value = key
@@ -72,7 +73,6 @@
     const deleteBtn = document.createElement('button')
     deleteBtn.innerText = 'Remove'
     deleteBtn.classList = 'btn delete'
-    deleteBtn.id = itemId
     deleteBtn.addEventListener('click', handelRemoveEntry)
 
     div.appendChild(keyInput)
@@ -84,7 +84,7 @@
 
   const handelRemoveEntry = (event) => {
     const btn = event.srcElement
-    const itemId = btn.id
+    const itemId = btn.parentElement.id
     chrome.runtime.sendMessage({
       type: 'deleteItem',
       itemId: itemId,
